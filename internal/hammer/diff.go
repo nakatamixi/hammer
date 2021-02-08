@@ -156,7 +156,7 @@ func (g *Generator) primaryKeyDeepEqual(from, to *Table) bool {
 		if !exists {
 			return false
 		}
-		if !reflect.DeepEqual(fromCol, toCol) {
+		if !g.columnDeepEqual(fromCol, toCol) {
 			return false
 		}
 	}
@@ -180,7 +180,7 @@ func (g *Generator) generateDDLForColumns(from, to *Table) DDL {
 			continue
 		}
 
-		if reflect.DeepEqual(fromCol, toCol) {
+		if g.columnDeepEqual(fromCol, toCol) {
 			continue
 		}
 
@@ -277,6 +277,14 @@ func (g *Generator) isDropedIndex(name spansql.ID) bool {
 
 func (g *Generator) typeEqual(x, y spansql.ColumnDef) bool {
 	return x.Type.Base == y.Type.Base && x.Type.Array == y.Type.Array
+}
+
+func (g *Generator) columnDeepEqual(x, y spansql.ColumnDef) bool {
+	return g.typeEqual(x, y) &&
+		x.Name == y.Name &&
+		x.Type.Len == y.Type.Len &&
+		x.NotNull == y.NotNull &&
+		reflect.DeepEqual(x.Options, y.Options)
 }
 
 // ignore Position
