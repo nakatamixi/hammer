@@ -229,7 +229,7 @@ func (g *Generator) generateDDLForDropIndex(from, to *Table) DDL {
 	for _, toIndex := range to.indexes {
 		fromIndex, exists := g.findIndexByName(from.indexes, toIndex.Name)
 
-		if exists && !reflect.DeepEqual(fromIndex, toIndex) {
+		if exists && !g.indexEqual(fromIndex, toIndex) {
 			ddl.Append(spansql.DropIndex{Name: fromIndex.Name})
 			g.dropedIndex = append(g.dropedIndex, fromIndex.Name)
 		}
@@ -249,7 +249,7 @@ func (g *Generator) generateDDLForCreateIndex(from, to *Table) DDL {
 	for _, toIndex := range to.indexes {
 		fromIndex, exists := g.findIndexByName(from.indexes, toIndex.Name)
 
-		if !exists || !reflect.DeepEqual(fromIndex, toIndex) {
+		if !exists || !g.indexEqual(fromIndex, toIndex) {
 			ddl.Append(toIndex)
 		}
 
@@ -277,6 +277,17 @@ func (g *Generator) isDropedIndex(name spansql.ID) bool {
 
 func (g *Generator) typeEqual(x, y spansql.ColumnDef) bool {
 	return x.Type.Base == y.Type.Base && x.Type.Array == y.Type.Array
+}
+
+// ignore Position
+func (g *Generator) indexEqual(x, y spansql.CreateIndex) bool {
+	return x.Name == y.Name &&
+		x.Table == y.Table &&
+		x.Unique == y.Unique &&
+		x.NullFiltered == y.NullFiltered &&
+		x.Interleave == y.Interleave &&
+		reflect.DeepEqual(x.Storing, y.Storing) &&
+		reflect.DeepEqual(x.Columns, y.Columns)
 }
 
 func (g *Generator) allowNull(col spansql.ColumnDef) spansql.ColumnDef {
