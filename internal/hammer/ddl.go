@@ -23,7 +23,7 @@ func (d *DDL) AppendDDL(ddl DDL) {
 }
 
 func ParseDDL(uri, schema string) (DDL, error) {
-	ddl, err := spansql.ParseDDL(schema)
+	ddl, err := spansql.ParseDDL(uri, schema)
 	if err != nil {
 		return DDL{}, fmt.Errorf("%s failed to parse ddl: %s", uri, err)
 	}
@@ -35,16 +35,16 @@ func ParseDDL(uri, schema string) (DDL, error) {
 }
 
 type AlterColumn struct {
-	Table string
+	Table spansql.ID
 	Def   spansql.ColumnDef
 }
 
 func (a AlterColumn) SQL() string {
-	return "ALTER TABLE " + a.Table + " ALTER COLUMN " + a.Def.SQL()
+	return "ALTER TABLE " + string(a.Table) + " ALTER COLUMN " + a.Def.SQL()
 }
 
 type Update struct {
-	Table string
+	Table spansql.ID
 	Def   spansql.ColumnDef
 }
 
