@@ -297,6 +297,38 @@ CREATE INDEX idx_t3 ON t3(t3_1);
 				`CREATE INDEX idx_t3 ON t3(t3_1)`,
 			},
 		},
+		// equal ddl
+		{
+			from: `
+
+CREATE TABLE t2 (
+  t1_1 INT64 NOT NULL,
+  t2_1 INT64 NOT NULL,
+  t2_2 INT64 NOT NULL,
+  t2_3 INT64 NOT NULL,
+) PRIMARY KEY(t1_1, t2_1),
+  INTERLEAVE IN PARENT t1 ON DELETE NO ACTION;
+CREATE INDEX idx_t2 ON t2(t2_1);
+CREATE TABLE t1 (
+  t1_1 STRING(36) NOT NULL,
+) PRIMARY KEY(t1_1);
+`,
+			to: `
+CREATE TABLE t1 (
+  t1_1 STRING(36) NOT NULL,
+) PRIMARY KEY(t1_1);
+
+CREATE TABLE t2 (
+  t1_1 INT64 NOT NULL,
+  t2_1 INT64 NOT NULL,
+  t2_2 INT64 NOT NULL,
+  t2_3 INT64 NOT NULL,
+) PRIMARY KEY(t1_1, t2_1),
+  INTERLEAVE IN PARENT t1 ON DELETE NO ACTION;
+CREATE INDEX idx_t2 ON t2(t2_1);
+`,
+			expected: []string{},
+		},
 	}
 	for i, v := range values {
 		t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
